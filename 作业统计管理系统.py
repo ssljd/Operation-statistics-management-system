@@ -3,7 +3,7 @@ import xlrd
 import xlwt
 import pymysql
 
-class student_system():
+# class student_system():
     # def __init__(self, housework):
         
 
@@ -11,11 +11,12 @@ class student_system():
 
 # 获取指定文件夹下的文件名，并将文件名储存在list1中，形成一个列表
 def listdir(path, list1):
-    for file in os.listdir(path):
+    for p, name, files in os.walk(path, topdown=False):
         # 判断文件名是否为doc或者docx
-        if os.path.splitext(file)[1] == '.doc' or os.path.splitext(file)[1] == '.docx':
-            # 特定类型的文件需要用os.path.splitext()函数将路径拆分，拆分为文件名和拓展名，[0]表示文件名，[1]表示拓展名
-            list1.append(file)  # 如果是两者中的一种，则将其加在列表中
+        for file in os.listdir(p):
+            if os.path.splitext(file)[1] == '.doc' or os.path.splitext(file)[1] == '.docx':
+                # 特定类型的文件需要用os.path.splitext()函数将路径拆分，拆分为文件名和拓展名，[0]表示文件名，[1]表示拓展名
+                list1.append(file)  # 如果是两者中的一种，则将其加在列表中
 
 def single(list1):
     data = xlrd.open_workbook('test.xlsx')  # 打开当前目录下名为test的文档，即学生信息
@@ -76,6 +77,9 @@ def multiple(all_homework):
                 sheet_test.write(i1, 1, stuname)
                 sheet_test.write(i1, n, student[xuehao])  # 将完成与否填入表格中
             n = n + 1
-            workbook.save('C://Users/sljd/Desktop/作业统计.xlsx')
+            workbook.save('C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业统计.xlsx')
 
-
+path = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业一'
+list = []
+listdir(path, list)
+print(list)
