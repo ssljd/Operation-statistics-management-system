@@ -1,5 +1,0 @@
-Execution time :Wed Dec 08 18:06:16 2021
-
-The total number of expressions is :  3
-The number of correct expressions is :  3
-The number of error expressions is :  0
