@@ -2,10 +2,7 @@ import os
 import xlrd
 import xlwt
 import pymysql
-
-# class student_system():
-    # def __init__(self, housework):
-        
+import matplotlib.pyplot as plt
 
 
 
@@ -78,6 +75,10 @@ def multiple(all_homework):
                 sheet_test.write(i1, n, student[xuehao])  # 将完成与否填入表格中
             n = n + 1
             workbook.save('C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业统计.xlsx')
+
+def visualization():
+    plt.figure(figsize=(8, 8))
+
 
 path = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业一'
 list = []
