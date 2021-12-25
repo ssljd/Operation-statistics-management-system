@@ -16,7 +16,7 @@ def listdir(path, list1):
                 list1.append(file)  # 如果是两者中的一种，则将其加在列表中
 
 def single(list1):
-    data = xlrd.open_workbook('test.xlsx')  # 打开当前目录下名为test的文档，即学生信息
+    data = xlrd.open_workbook('AI201学生名单.xls')  # 打开当前目录下名为test的文档，即学生信息
     # 获得工作表
     table = data.sheet_by_name('Sheet1')  # 通过名称获取，即读取sheet1表单，
     # 也可以table = data.sheet_by_index(0)通过索引获取，例如打开第一个sheet表格
@@ -44,8 +44,8 @@ def single(list1):
             list2.append(key)
             print(key, end="\n")  # 输出未交学生的学号
     a = len(list2)
-    b = (30 - a) / 30 * 100
-    print('提交人数：', 30 - a)
+    b = (25 - a) / 25 * 100
+    print('提交人数：', 25 - a)
     print('未提交人数：', a)
     print('提交率为：', b, '%')  # 计算提交率
     print('*' * 40)
@@ -84,3 +84,4 @@ path = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管�
 list = []
 listdir(path, list)
 print(list)
+single(list)
