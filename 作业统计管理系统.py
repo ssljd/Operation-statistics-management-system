@@ -4,7 +4,7 @@ import xlwt
 import pymysql
 
 class student_system():
-    def __init__(self, housework):
+    # def __init__(self, housework):
         
 
 
