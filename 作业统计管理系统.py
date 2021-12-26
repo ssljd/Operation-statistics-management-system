@@ -1,47 +1,164 @@
 import os
+import sys
 import xlrd
 import xlwt
-import pymysql
 from pyecharts.charts import Pie
 from pyecharts import options as opts
-import qtawesome
 from tkinter import *
 import time
 import threading
-import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-import webbrowser
-from PyQt5 import QtGui, QtCore, QtWidgets, QtSql
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import QPushButton
 
+pb_x = 0
+pb_y = 0
+pb_width = 100
+pb_height = 20
+
+pb_bg = "white"
+pb_fg = "green"
+pb_frame_size = 0
+canvas = Canvas
+
+class progress:
+    def __init__(self):
+        pass
+
+    # 初始化，创建Canvas实例，设定坐标和宽高
+    def init(self, master, x=pb_x, y=pb_y,
+             width=pb_width, height=pb_height,
+             bg=pb_bg, fg=pb_fg,
+             frame_size=pb_frame_size):
+        global pb_x
+        pb_x = x
+
+        global pb_y
+        pb_y = y
+
+        global pb_width
+        pb_width = width
+
+        global pb_height
+        pb_height = height
+
+        global pb_bg
+        pb_bg = bg
+
+        global pb_fg
+        pb_fg = fg
+
+        global pb_frame_size
+        pb_frame_size = frame_size
+
+        global canvas
+        canvas = Canvas(master, width=width, height=height, bg=pb_bg)
+        canvas.place(x=x, y=y)
+
+    # 运行进度条
+    def run(self, master, percentage, text=None):
+        global canvas
+        fill_line = canvas.create_rectangle(1.5, 1.5, 0, 23, width=0, fill=pb_fg)
+        canvas.coords(fill_line, (0, 0, percentage, 60))
+        if text:
+            label = Label(master, text=text)
+            label.place(x=pb_x + pb_width, y=pb_y)
+        master.update()
+
+# 主界面
 class Mainin(QWidget):
     def __init__(self):
         super().__init__()
         self.init_ui()
+
     def init_ui(self):
-        self.cb = QCheckBox("是否开始执行", self)
-        self.cb.move(30, 30)
-        self.cb.toggle()
-        self.cb.stateChanged.connect(self.savelist)
-        self.cb.setGeometry(300, 300, 250, 150)
-        self.cb.setWindowTitle('复选框')
-        self.show()
-    def savelist(self):
+        self.setWindowTitle('操作界面')
+        self.resize(800, 450)
+        self.setFixedSize(self.width(), self.height())
+        self.setWindowFlags(Qt.WindowCloseButtonHint)
+        self.setWindowOpacity(0.9)  # 设置窗口透明度
+        self.setWindowFlag(QtCore.Qt.FramelessWindowHint)  # 隐藏边框
+        palette = QPalette()
+        palette.setBrush(QPalette.Background, QBrush(QPixmap("./1.png")))
+        self.setPalette(palette)
 
-        if self.cb.checkState() == 2:
-            print('执行')
-            path4 = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/计科作业/作业三'
-            list1 = []
-            list2 = []
-            listdir(path4, list1, list2, False)
-            all_housework, num = single(list1)
-            visualization(num)
-        elif self.cb.checkState() == 0:
-            print('不执行')
+        ###### 设置界面控件
+        self.verticalLayout = QGridLayout(self)
+        self.H = QLabel("")
+        self.verticalLayout.addWidget(self.H, 0, 0, 9, 0)
 
+        self.left_close = QtWidgets.QPushButton("")  # 关闭按钮
+        self.left_visit = QtWidgets.QPushButton("")  # 空白按钮
+        self.left_mini = QtWidgets.QPushButton("")  # 最小化按钮
+        self.verticalLayout.addWidget(self.left_mini, 0, 6, 1, 1)
+        self.verticalLayout.addWidget(self.left_close, 0, 8, 1, 1)
+        self.verticalLayout.addWidget(self.left_visit, 0, 7, 1, 1)
+        self.left_close.setFixedSize(15, 15)  # 设置关闭按钮的大小
+        self.left_visit.setFixedSize(15, 15)  # 设置最大化按钮大小
+        self.left_mini.setFixedSize(15, 15)  # 设置最小化按钮大小
+        self.left_close.setStyleSheet(
+            '''QPushButton{background:#F76677;border-radius:5px;}QPushButton:hover{background:red;}''')
+        self.left_visit.setStyleSheet(
+            '''QPushButton{background:#F7D674;border-radius:5px;}QPushButton:hover{background:yellow;}''')
+        self.left_mini.setStyleSheet(
+            '''QPushButton{background:#6DDF6D;border-radius:5px;}QPushButton:hover{background:green;}''')
 
+        self.pushButton_execute = QPushButton()
+        self.pushButton_execute.setText("开始执行")
+        self.verticalLayout.addWidget(self.pushButton_execute, 5, 4, 1, 3)
+        self.pushButton_execute.setStyleSheet(
+            "QPushButton{color:highlight}"
+            "QPushButton:hover{color:white}"
+            "QPushButton{background-color:rgb(0,191,255)}"
+            "QPushButton{border:2px}"
+            "QPushButton{border-radius:10px}"
+            "QPushButton{padding:5px 6px}"
+            "QPushButton{font-size:14pt}")
 
+        self.pushButton_n_execute = QPushButton()
+        self.pushButton_n_execute.setText("退出")
+        self.verticalLayout.addWidget(self.pushButton_n_execute, 6, 4, 1, 3)
+        self.pushButton_n_execute.setStyleSheet(
+            "QPushButton{color:highlight}"
+            "QPushButton:hover{color:white}"
+            "QPushButton{background-color:rgb(0,191,255)}"
+            "QPushButton{border:2px}"
+            "QPushButton{border-radius:10px}"
+            "QPushButton{padding:5px 6px}"
+            "QPushButton{font-size:14pt}")
+
+        ###### 绑定按钮事件
+
+        self.pushButton_execute.clicked.connect(self.on_pushButton_execute_clicked)
+        self.pushButton_n_execute.clicked.connect(self.n_execute_clicked)
+
+    def on_pushButton_execute_clicked(self):
+
+        print('执行')
+        path4 = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/计科作业/作业三'
+        list1 = []
+        list2 = []
+        listdir(path4, list1, list2, False)
+
+        self.progress_bar()
+        all_housework, num = single(list1)
+        visualization(num)
+
+    def n_execute_clicked(self):
+        main_in.close()
+
+    # 进度条
+    def progress_bar(self):
+        root = Tk()
+        root.title("progressBar")
+        root.geometry("300x100")
+        progress.init(self=progress, master=root, x=10, y=20)
+        for i in range(0, 101):
+            progress.run(self=progress, master=root, percentage=i, text="处理进度：" + str(i) + "%")
+            time.sleep(0.01)
+        root.mainloop()
 
 # 获取指定文件夹下的文件名，并将文件名储存在list中，形成一个列表
 # 若choice是true，则将总文件夹下的个人文件夹名储存在list2中
@@ -130,7 +247,6 @@ def visualization(num):
     pie.set_global_opts(title_opts=opts.TitleOpts(title="Pie-设置颜色"))
     pie.render("pie.html")
 
-''''''
 #欢迎界面
 def showWelcome():
     sw = root1.winfo_screenwidth()  # 获取屏幕宽度
@@ -160,10 +276,11 @@ if __name__ == '__main__':
     t1.start()
     root1.mainloop()
     app = QtWidgets.QApplication(sys.argv)
+
     main_in = Mainin()
+    main_in.show()
 
     sys.exit(app.exec_())
-
 
     # path1 = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业一'
     # path2 = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业二'
