@@ -2164,7 +2164,7 @@ class MainUi(QtWidgets.QMainWindow):
         self.model.setEditStrategy(QtSql.QSqlTableModel.OnFieldChange)  # 允许字段更改
         self.model.select()  # 查询所有数据
 
-     #查询增加的学生信息
+    #   查询增加的学生信息
     def view_data53(self):
      try:
         index = self.model.index(self.model.rowCount() - 1, 0)  # 调用model的index方法获取行和列对应项的索引
