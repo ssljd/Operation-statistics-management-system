@@ -72,6 +72,8 @@ class progress:
 class Mainin(QWidget):
     def __init__(self):
         super().__init__()
+        self.path_floder = ''
+        self.path_file = ''
         self.init_ui()
 
     def init_ui(self):
@@ -106,19 +108,37 @@ class Mainin(QWidget):
         self.left_mini.setStyleSheet(
             '''QPushButton{background:#6DDF6D;border-radius:5px;}QPushButton:hover{background:green;}''')
 
-        # 默认页面
+        # 获取excel文件按钮
+        self.right_folder_button11 = QtWidgets.QPushButton(qtawesome.icon('fa.folder', color='GoldenRod'), "")
+        self.verticalLayout.addWidget(self.right_folder_button11, 2, 3, 1, 2)
+        self.right_folder_button11.setStyleSheet(
+            "QPushButton{color:highlight}"
+            "QPushButton:hover{color:white}"
+            "QPushButton{background-color:rgb(0,191,255)}"
+            "QPushButton{border:none}"
+            "QPushButton{border-radius:10px}"
+            "QPushButton{padding:5px 6px}"
+            "QPushButton{font-size:14pt}")
+        self.right_folder_button11.setObjectName('right_search_button')
+        self.right_folder_button11.setFont(qtawesome.font('fa', 16))
+        self.right_folder_button11.clicked.connect(self.file_button_clicked31)
+        self.right_folder_button11.setFixedSize(30, 30)  # 设置按钮大小
 
+        self.right_bar_widget_folder_input8 = QtWidgets.QLineEdit()
+        self.right_bar_widget_folder_input8.setPlaceholderText("填入或选择需要上传的excel文件")
+        self.right_bar_widget_folder_input8.setObjectName("right_input_item")
+        self.verticalLayout.addWidget(self.right_bar_widget_folder_input8, 2, 4, 1, 3)
+        self.right_bar_widget_folder_input8.setStyleSheet(
+            '''QLineEdit{
+                    border:1px solid gray;
+                    width:200px;
+                    border-radius:10px;
+                    padding:2px 4px;
+            }''')
 
-        # self.right_bar_widget = QtWidgets.QWidget()  # 右侧顶部搜索框部件
-        # self.right_bar_layout = QtWidgets.QGridLayout()  # 右侧顶部搜索框网格布局
-        # self.right_bar_widget.setLayout(self.right_bar_layout)
-        #
-        # self.right_bar_widget1 = QtWidgets.QWidget()  # 右侧顶部搜索框部件
-        # self.right_bar_layout1 = QtWidgets.QGridLayout()  # 右侧顶部搜索框网格布局
-        # self.right_bar_widget1.setLayout(self.right_bar_layout1)
-
+        # 获取文件夹按钮
         self.right_folder_button22 = QtWidgets.QPushButton(qtawesome.icon('fa.folder', color='GoldenRod'), "")
-        self.verticalLayout.addWidget(self.right_folder_button22, 4, 4, 1, 2)
+        self.verticalLayout.addWidget(self.right_folder_button22, 3, 3, 1, 2)
         self.right_folder_button22.setStyleSheet(
             "QPushButton{color:highlight}"
             "QPushButton:hover{color:white}"
@@ -129,22 +149,22 @@ class Mainin(QWidget):
             "QPushButton{font-size:14pt}")
         self.right_folder_button22.setObjectName('right_search_button')
         self.right_folder_button22.setFont(qtawesome.font('fa', 16))
-        self.right_folder_button22.clicked.connect(self.right_folder_button_clicked31)
+        self.right_folder_button22.clicked.connect(self.folder_button_clicked31)
         self.right_folder_button22.setFixedSize(30, 30)  # 设置按钮大小
+
         self.right_bar_widget_folder_input9 = QtWidgets.QLineEdit()
         self.right_bar_widget_folder_input9.setPlaceholderText("填入或选择需要上传的文件夹")
         self.right_bar_widget_folder_input9.setObjectName("right_input_item")
-        self.verticalLayout.addWidget(self.right_bar_widget_folder_input9, 4, 4, 1, 3)
+        self.verticalLayout.addWidget(self.right_bar_widget_folder_input9, 3, 4, 1, 3)
         self.right_bar_widget_folder_input9.setStyleSheet(
             '''QLineEdit{
                     border:1px solid gray;
-                    width:10px;
+                    width:200px;
                     border-radius:10px;
                     padding:2px 4px;
             }''')
 
-
-
+        # 设置开始执行按钮
         self.pushButton_execute = QPushButton()
         self.pushButton_execute.setText("开始执行")
         self.verticalLayout.addWidget(self.pushButton_execute, 5, 4, 1, 3)
@@ -157,6 +177,7 @@ class Mainin(QWidget):
             "QPushButton{padding:5px 6px}"
             "QPushButton{font-size:14pt}")
 
+        # 设置退出按钮
         self.pushButton_n_execute = QPushButton()
         self.pushButton_n_execute.setText("退出")
         self.verticalLayout.addWidget(self.pushButton_n_execute, 6, 4, 1, 3)
@@ -174,26 +195,33 @@ class Mainin(QWidget):
         self.pushButton_execute.clicked.connect(self.on_pushButton_execute_clicked)
         self.pushButton_n_execute.clicked.connect(self.n_execute_clicked)
 
+    # 执行
     def on_pushButton_execute_clicked(self):
-
         print('执行')
-        path4 = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/计科作业/作业三'
         list1 = []
         list2 = []
-        listdir(path4, list1, list2, False)
+        listdir(self.path_folder, list1, list2, False)
 
         self.progress_bar()
-        all_housework, num = single(list1)
+        all_housework, num = single(list1, self.path_file)
         visualization(num)
 
+    # 退出
     def n_execute_clicked(self):
         main_in.close()
 
-    # 默认页面的路径选择
-    def right_folder_button_clicked31(self):
-        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, "选取文件", os.getcwd(),
-                                                                    "All Files(*);;Text Files(*.txt)")
+    # 文件夹的路径选择
+    def folder_button_clicked31(self):
+        fileName = QtWidgets.QFileDialog.getExistingDirectory(self, "选取文件夹", os.getcwd())
         main_in.right_bar_widget_folder_input9.setText(fileName)
+        self.path_folder = fileName
+
+    # excel文件的路径选择
+    def file_button_clicked31(self):
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, "选取文件", os.getcwd(),
+                                                                    "All Files(*);;Text Files(*.xls)")
+        main_in.right_bar_widget_folder_input8.setText(fileName)
+        self.path_file = fileName
 
     # 进度条
     def progress_bar(self):
@@ -204,6 +232,8 @@ class Mainin(QWidget):
         for i in range(0, 101):
             progress.run(self=progress, master=root, percentage=i, text="处理进度：" + str(i) + "%")
             time.sleep(0.01)
+            if i == 100:
+                root.destroy()
         root.mainloop()
 
 # 获取指定文件夹下的文件名，并将文件名储存在list中，形成一个列表
@@ -222,9 +252,9 @@ def listdir(path, list1, list2, choice):
                 list1.append(file)  # 如果是两者中的一种，则将其加在列表中
 
 # 单词作业处理函数
-def single(list1):
+def single(list1, file_path):
     # data = xlrd.open_workbook('AI201学生名单.xls')  # 打开当前目录下名为test的文档，即学生信息
-    data = xlrd.open_workbook('计科201学生名单.xls')  # 打开当前目录下名为test的文档，即学生信息
+    data = xlrd.open_workbook(file_path)  # 打开当前目录下名为test的文档，即学生信息
     # 获得工作表
     table = data.sheet_by_name('Sheet1')  # 通过名称获取，即读取sheet1表单，
     # 也可以table = data.sheet_by_index(0)通过索引获取，例如打开第一个sheet表格
@@ -315,6 +345,11 @@ def closeWelcome():
 
 
 if __name__ == '__main__':
+    # global path_folder
+    path_folder = ''
+    path_file = ''
+    # global path_file
+
     root1 = Tk()
     tMain = threading.Thread(target=showWelcome)  # 开始展示
     tMain.start()
