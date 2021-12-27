@@ -2,6 +2,7 @@ import os
 import sys
 import xlrd
 import xlwt
+import qtawesome
 from pyecharts.charts import Pie
 from pyecharts import options as opts
 from tkinter import *
@@ -105,6 +106,45 @@ class Mainin(QWidget):
         self.left_mini.setStyleSheet(
             '''QPushButton{background:#6DDF6D;border-radius:5px;}QPushButton:hover{background:green;}''')
 
+        # 默认页面
+
+
+        # self.right_bar_widget = QtWidgets.QWidget()  # 右侧顶部搜索框部件
+        # self.right_bar_layout = QtWidgets.QGridLayout()  # 右侧顶部搜索框网格布局
+        # self.right_bar_widget.setLayout(self.right_bar_layout)
+        #
+        # self.right_bar_widget1 = QtWidgets.QWidget()  # 右侧顶部搜索框部件
+        # self.right_bar_layout1 = QtWidgets.QGridLayout()  # 右侧顶部搜索框网格布局
+        # self.right_bar_widget1.setLayout(self.right_bar_layout1)
+
+        self.right_folder_button22 = QtWidgets.QPushButton(qtawesome.icon('fa.folder', color='GoldenRod'), "")
+        self.verticalLayout.addWidget(self.right_folder_button22, 4, 4, 1, 2)
+        self.right_folder_button22.setStyleSheet(
+            "QPushButton{color:highlight}"
+            "QPushButton:hover{color:white}"
+            "QPushButton{background-color:rgb(0,191,255)}"
+            "QPushButton{border:none}"
+            "QPushButton{border-radius:10px}"
+            "QPushButton{padding:5px 6px}"
+            "QPushButton{font-size:14pt}")
+        self.right_folder_button22.setObjectName('right_search_button')
+        self.right_folder_button22.setFont(qtawesome.font('fa', 16))
+        self.right_folder_button22.clicked.connect(self.right_folder_button_clicked31)
+        self.right_folder_button22.setFixedSize(30, 30)  # 设置按钮大小
+        self.right_bar_widget_folder_input9 = QtWidgets.QLineEdit()
+        self.right_bar_widget_folder_input9.setPlaceholderText("填入或选择需要上传的文件夹")
+        self.right_bar_widget_folder_input9.setObjectName("right_input_item")
+        self.verticalLayout.addWidget(self.right_bar_widget_folder_input9, 4, 4, 1, 3)
+        self.right_bar_widget_folder_input9.setStyleSheet(
+            '''QLineEdit{
+                    border:1px solid gray;
+                    width:10px;
+                    border-radius:10px;
+                    padding:2px 4px;
+            }''')
+
+
+
         self.pushButton_execute = QPushButton()
         self.pushButton_execute.setText("开始执行")
         self.verticalLayout.addWidget(self.pushButton_execute, 5, 4, 1, 3)
@@ -148,6 +188,12 @@ class Mainin(QWidget):
 
     def n_execute_clicked(self):
         main_in.close()
+
+    # 默认页面的路径选择
+    def right_folder_button_clicked31(self):
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, "选取文件", os.getcwd(),
+                                                                    "All Files(*);;Text Files(*.txt)")
+        main_in.right_bar_widget_folder_input9.setText(fileName)
 
     # 进度条
     def progress_bar(self):
