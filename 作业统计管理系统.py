@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy
 import xlrd
 import xlwt
 import qtawesome
@@ -16,11 +17,11 @@ from PyQt5.QtWidgets import QPushButton
 
 pb_x = 0
 pb_y = 0
-pb_width = 100
+pb_width = 80
 pb_height = 20
 
 pb_bg = "white"
-pb_fg = "green"
+pb_fg = "blue"
 pb_frame_size = 0
 canvas = Canvas
 
@@ -200,11 +201,20 @@ class Mainin(QWidget):
         print('执行')
         list1 = []
         list2 = []
-        listdir(self.path_folder, list1, list2, False)
+        listdir(self.path_folder, list1, list2, True)
+        all_homework = mergelist(list1, list2)
 
         self.progress_bar()
-        all_housework, num = single(list1, self.path_file)
-        visualization(num)
+        with open('作业未交信息.txt', 'w') as f:  # 清空作业未交信息.txt之前的信息
+            f.write('')
+        all_housework = []
+        for i in range(len(all_homework)):
+            with open('作业未交信息.txt', 'a') as f:
+                f.write('{}情况\n'.format(homework_list[i]))
+            housework, num = homework_handle(all_homework[i], self.path_file)
+            all_housework.append(housework)
+        Statistics_excel(all_housework, self.path_file)
+        print('完成')
 
     # 退出
     def n_execute_clicked(self):
@@ -236,23 +246,74 @@ class Mainin(QWidget):
                 root.destroy()
         root.mainloop()
 
-# 获取指定文件夹下的文件名，并将文件名储存在list中，形成一个列表
-# 若choice是true，则将总文件夹下的个人文件夹名储存在list2中
-# 若choice是false，则将总文件夹下的个人文件夹下的word文件名储存在list1中
+'''
+    @:name: listdir
+    @:param1 path: 指定文件夹路径
+    @:param2 list1: 储存压缩包文件名
+    @:param3 list2: 个人文件夹名
+    @:param4 choice: 选择os.walk的执行方式
+    @:function : 将总文件夹下的压缩包名储存在list1，将总文件夹下的个人文件夹下的储存在list2
+    @:return 无
+'''
 def listdir(path, list1, list2, choice):
-    for p, name, files in os.walk(path, topdown=choice):
-        if name:
-            for file in name:
-                list2.append(file)
+    global homework_list
+    for p, names, files in os.walk(path, topdown=choice):
+        homework_list = []  # 储存单次作业的文件夹名称
+        while (names):
+            for file in names:
+                homework_list.append(file)
             break
-        # 判断文件名是否为doc或者docx
-        for file in os.listdir(p):
-            if os.path.splitext(file)[1] == '.doc' or os.path.splitext(file)[1] == '.docx':
-                # 特定类型的文件需要用os.path.splitext()函数将路径拆分，拆分为文件名和拓展名，[0]表示文件名，[1]表示拓展名
-                list1.append(file)  # 如果是两者中的一种，则将其加在列表中
+        paths = []
+        for i in range(len(homework_list)):
+            paths.append(os.path.join(p, homework_list[i]))
 
-# 单词作业处理函数
-def single(list1, file_path):
+        list3 = []  # 新建临时列表
+        # 以压缩包作为统计文件，统计交作业的学生个数
+        for i in range(len(homework_list)):
+            hwork = os.listdir(paths[i])
+            for item in hwork:
+                if item.split('.')[-1] == 'zip' or item.split('.')[-1] == 'rar':
+                    list3.append(item.split('.')[0])
+            list1.append(list3)
+
+        # 以文件夹作为统计文件，统计交作业的学生个数
+        for i in range(len(homework_list)):
+            for pi, name, files_ in os.walk(paths[i], topdown=choice):
+                if name:
+                    list4 = []  # 新建临时列表
+                    for file in name:
+                        list4.append(file)
+                    list2.append(list4)
+                break
+        break
+
+# 获取列表的最大值
+def Max(len1, len2):
+    if len2 >= len1:
+        return len2
+    else:
+        return len1
+
+# 合并列表list1和list2
+def mergelist(list1, list2):
+    global all_homework
+    all_homework = []
+
+    for i in range(Max(len(list1), len(list2))):
+        single_homework = []
+        [single_homework.append(item1) for item1 in list1[i]]
+        [single_homework.append(item2) for item2 in list2[i]]
+        all_homework.append(numpy.unique(single_homework))
+    return all_homework
+
+'''
+    @:name: homework_handle
+    @:param1 list: 储存学生信息列表
+    @:param2 file_path: excel表文件路径
+    @：function: 获取未交学生学号，并将未交学生学号以及提交人数、为提交人数、提交率打印到文本文件
+    @：return: student, list_all
+'''
+def homework_handle(list, file_path):
     # data = xlrd.open_workbook('AI201学生名单.xls')  # 打开当前目录下名为test的文档，即学生信息
     data = xlrd.open_workbook(file_path)  # 打开当前目录下名为test的文档，即学生信息
     # 获得工作表
@@ -261,6 +322,8 @@ def single(list1, file_path):
     # 还可以table = data.sheets()[0]#通过索引顺序获取
     nrows = table.nrows  # 获取该sheet1表格中的有效行数
     student = {}  # 将student{}作为一个字典存取数据
+    student_name = {}
+
     for i1 in range(1, nrows):  # 从第二行开始有所需要的数据
         xuehao = table.cell_value(i1, 0)  # 获取单元格中的学号
         name = table.cell(i1, 1).value  # 获取单元格中的姓名
@@ -271,28 +334,38 @@ def single(list1, file_path):
         xuehao = int(xuehao)
         # 将浮点数转化为整数
         student[xuehao] = 0  # 默认字典中学号对应0，即未交作业
-        for zuoye in list1:  # 遍历每一份作业
+        # student_name[name] = 0
+        for zuoye in list:  # 遍历每一份作业
             if str(xuehao) in zuoye or name in zuoye:
                 # 如果出现学号或者姓名，则认为交了作业
                 student[xuehao] = 1  # 记为1，认为交了作业
-    print("未交学生的学号:")
-    list2 = []  # 新建列表计算未交作业个数
+                # student_name = 1
+    with open('作业未交信息.txt', 'a') as f:
+        f.write('"未交学生的学号:"\n')
+    list6 = []  # 新建列表计算未交作业个数
     for key, values in student.items():  # 用items() 函数遍历(键, 值) 元组数组，key表示学号，value表示是否交作业
         if values == 0:
-            list2.append(key)
-            print(key, end="\n")  # 输出未交学生的学号
-    a = len(list2)
+            list6.append(key)
+            with open('作业未交信息.txt', 'a') as f:
+                f.write('{}\n'.format(key))
+    a = len(list6)
     b = (nrows - 1 - a) / (nrows-1) * 100
-    print('提交人数：', nrows - 1 - a)
-    print('未提交人数：', a)
-    print('提交率为：', b, '%')  # 计算提交率
-    print('*' * 40)
-    list_all = [len(list1), len(list2)]
+    with open('作业未交信息.txt', 'a') as f:
+        f.write('提交人数：{}\n'.format(nrows - 1 - a))
+        f.write('未提交人数：{}\n'.format(a))
+        f.write('{}\n'.format('*' * 40))
+    list_all = [len(list), len(list6)]
     return student, list_all
 
-# 多次作业处理函数
-def multiple(all_homework):
-    date = xlrd.open_workbook('test.xlsx')  # 打开当前学生名单
+'''
+    @:name: Statistics_excel
+    @:param1 all_homework: 储存学生信息列表
+    @:param2 file_path: excel表文件路径
+    @：function: 将学生的提交信息导入到XLS文件中
+    @：return: 无
+'''
+def Statistics_excel(all_homework, file_path):
+    date = xlrd.open_workbook(file_path)  # 打开当前学生名单
     table = date.sheet_by_name('Sheet1')  # 通过名称获取，即读取sheet1表单s
     # 也可以table = data.sheet_by_index(0)通过索引获取，例如打开第一个sheet表格
     # 还可以table = data.sheets()[0]#通过索引顺序获取
@@ -301,27 +374,25 @@ def multiple(all_homework):
     sheet_test = workbook.add_sheet('sheet_test', cell_overwrite_ok=True)  # 用cell_overwrite_ok=True实现对单元格的重复写
     sheet_test.write(0, 0, '学号')  # 将学号写入Excel中
     sheet_test.write(0, 1, '姓名')  # 将姓名写入Excel中
+    j = 2   # 从第三列开始写作业名称到第一列
+    for i in range(len(homework_list)):
+        sheet_test.write(0, j, homework_list[i])
+        j += 1
     n = 2  # 从第三列开始储存每次作业的情况
+    style = "font:colour_index red;"
+    red_style = xlwt.easyxf(style)
     for homework in all_homework:
-        for i in homework:  # 遍历每次作业
-            sheet_test.write(0, n, i)
-            student = all_homework[i]
-            for i1 in range(1, nrows):
-                xuehao = table.cell(i1, 0).value  # 获取学号单元格的值
-                stuname = table.cell(i1, 1).value  # 获取姓名单元格的值
-                sheet_test.write(i1, 0, xuehao)
-                sheet_test.write(i1, 1, stuname)
-                sheet_test.write(i1, n, student[xuehao])  # 将完成与否填入表格中
-            n = n + 1
-            workbook.save('C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业统计.xlsx')
-
-def visualization(num):
-    situation = ['已提交', '未提交']
-    pie = Pie()
-    pie.add("", [list(z) for z in zip(situation, num)])
-    pie.set_colors(["#38E737", "#FF3366"])
-    pie.set_global_opts(title_opts=opts.TitleOpts(title="Pie-设置颜色"))
-    pie.render("pie.html")
+        for i1 in range(1, nrows):
+            xuehao = int(table.cell(i1, 0).value)  # 获取学号单元格的值
+            stuname = table.cell(i1, 1).value  # 获取姓名单元格的值
+            sheet_test.write(i1, 0, xuehao)
+            sheet_test.write(i1, 1, stuname)
+            if homework[xuehao] == 1:
+                sheet_test.write(i1, n, '已交')  # 将完成与否填入表格中
+            elif homework[xuehao] == 0:
+                sheet_test.write(i1, n, '未交', red_style)  # 将完成与否填入表格中
+        n = n + 1
+        workbook.save('作业统计.xls')
 
 #欢迎界面
 def showWelcome():
@@ -345,10 +416,9 @@ def closeWelcome():
 
 
 if __name__ == '__main__':
-    # global path_folder
+
     path_folder = ''
     path_file = ''
-    # global path_file
 
     root1 = Tk()
     tMain = threading.Thread(target=showWelcome)  # 开始展示
@@ -363,12 +433,3 @@ if __name__ == '__main__':
 
     sys.exit(app.exec_())
 
-    # path1 = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业一'
-    # path2 = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业二'
-    # path3 = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业三'
-    # path4 = 'C:/Users/sljd/Desktop/Code_library/python/Leisure code/作业统计管理系统/作业四'
-    # list1 = []
-    # list2 = []
-    # listdir(path1, list1, list2, False)
-    # all_housework, num = single(list1)
-    # visualization(num)
