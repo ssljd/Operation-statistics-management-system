@@ -85,7 +85,7 @@ class Mainin(QWidget):
         self.setWindowOpacity(0.9)  # 设置窗口透明度
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)  # 隐藏边框
         palette = QPalette()
-        palette.setBrush(QPalette.Background, QBrush(QPixmap("./1.png")))
+        palette.setBrush(QPalette.Background, QBrush(QPixmap("./图片界面/1.png")))
         self.setPalette(palette)
 
         ###### 设置界面控件
@@ -403,8 +403,8 @@ def showWelcome():
     x = (sw - 800) / 2
     y = (sh - 450) / 2
     root1.geometry("800x450+%d+%d" % (x, y))  # 将窗口置于屏幕中央
-    if os.path.exists(r'./9.gif'):  # 搜索图片文件（只能是gif格式）
-        bm = PhotoImage(file=r'./9.gif')
+    if os.path.exists(r'./图片界面/9.gif'):  # 搜索图片文件（只能是gif格式）
+        bm = PhotoImage(file=r'./图片界面/9.gif')
         lb_welcomelogo = Label(root1, image=bm)  # 将图片放置于窗口
         lb_welcomelogo.bm = bm
         lb_welcomelogo.place(x=-2, y=-2, )  # 设置图片位置
