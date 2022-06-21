@@ -41,7 +41,8 @@ python + pycharm
 [资料1](https://blog.csdn.net/weixin_51390582/article/details/119269917) </p>
 [资料2](https://blog.csdn.net/m0_46315929/article/details/120177940) </p>
 [示例代码(github)](https://github.com/wuhudasm-lll/-2.0) </p>
-[示例代码(本地)](示例/-2.0-main)
+[示例代码(本地)](示例/-2.0-main) </p>
+
 
 ![系统欢迎界面](图片界面/9.gif)  
 <center><p>欢迎界面</center>
