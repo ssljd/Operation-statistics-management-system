@@ -1,0 +1,9 @@
+- numpy
+- xlrd
+- xlwt
+- qtawesome
+- tkinter
+- threading
+- PyQt5
+- pymysql
+- webbrowser
